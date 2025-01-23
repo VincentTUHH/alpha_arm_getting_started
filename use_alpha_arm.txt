@@ -1,3 +1,127 @@
-1. Schritt: Git-Repository erstellen
-2. Schritt: Mit VSCode verknüpfen
-3. Schritt: Änderungen committen und pushen
+ReachRobotics provides basic comminication script in python to comunicate and control the Alpha5 Arm.
+!They only work, when no other script, like a ros node, is running and accesses the USB port (see ### serial port number ###)
+
+### Use cases ####
+- drive joints to desired states
+- read joint states like position, velocity, current, current limits
+
+### Connect to Alpha5 Arm ###
+Connect Alpha5 Arm with your computer, the scripts can be found on github:
+-> https://github.com/HippoCampusRobotics/alpha_arm/tree/main/alpha_hardware_interface/basic_communication_scripts/python_scripts
+
+Alpha5 Arm is mounted to the BlueROV2. All the python scripts are installed on the pi in the lower tube, that can be found in:
+-> ~/uvms/src/alpha_hardware_interface/scripts/base_test_scripts
+- Both the BlueROV2 and your computer must be connected to the same local network via ethernet.
+- Open a terminal console on your computer
+- Connect to the pi via ssh by typing: ssh pi@klopsi-buddy-00.local and enter the passoword when asked (get the password from a colleague of MuM)
+
+### Execute python scripts ###
+From terminal navigate to to the folder with the python scripts.
+To execute a script type: python3 file_name.py
+
+### serial port number ###
+In each python script the serial port has to be specified that is used for communication with the serial connection to the Alpha5 Arm.
+In general this is "/dev/ttyUSB0", when no other USB-to-serial adapter are connected to your computer.
+If you are unsure which port is used, do the following:
+1. Disconnect the Alpha5 Arm from your computer.
+2. Take note of the listed USB-to serial devices, by typing ls /dev/ttyUSB* in the terminal.
+3. Reconnect the Alpha5 Arm to your computer.
+4. The newly appearing port, when typing ls /dev/ttyUSB* is the one associated with the Alpha5 Arm.
+Before running any python scripts, make sure to update the "serial_port_name" with the port number used by the Alpha5 Arm.
+
+### get_joint_limits.py ###
+Makes a request to read information from the Alpha5 Arm.
+Use this script to print, e.g. limits, states and othe to the terminal.
+Adapt the code with different PacketID's to do so.
+
+### joint_control.py ###
+Set values individually for each joint to govern its position, relative position, velocity or current.
+!!! Wrist joint (device_id = 0x02) of 0 degrees is by default a rotation of the gripper by 30 degrees.
+-> +30° = 0.524 rad: gripper jaws vertical
+-> -60° = rad: gripper jaws horizontal
+
+### neutral_position.py ###
+Is only installed on the pi of the BlueROV2.
+Brings the Alpha5 Arm in a neutral position, with the arm oriented straight ahead.
+
+gripper jaws:
+-> 13.08: fully opened
+-> 1.268: fuly closed
+
+### device_id ###
+- 0x5 = Joint1 / Device5 / base joint / position in rad and velocity in rad/s (0.1 rad = 5.73°)
+- 0x4 = Joint2 / Device4 / position in rad and velocity in rad/s (0.1 rad = 5.73°)
+- 0x3 = Joint3 / Device3 / position in rad and velocity in rad/s (0.1 rad = 5.73°)
+- 0x2 = Joint4 / Device2 / position in rad and velocity in rad/s (0.1 rad = 5.73°)
+- 0x1 = Joint5 / Device1 / gripper joint / position in mm and velocity in mm/s
+
+### PacketID ###
+PacketID's specify the values of the Alpha5 Arm that can be written and read.
+They are included by every phython script and are defined in bplprotocol/packetID.py.
+The script get_joint_limits.py can adapted to print other values than joint velocity limits. 
+Just replacace all the PacketID's with another PacketID.
+A list of all PacketID's is given here:
+    """
+    MODE = 0x01
+    "1 byte - Describes the Mode of a device"
+    VELOCITY = 0x02
+    "1 float - Describes the velocity of a device. Radians/s for angular joints. mm/s for linear joints."
+    POSITION = 0x03
+    "1 float - Describes the position of a device. In radians or mm"
+    CURRENT = 0x05
+    "1 float - Describes the current drawn by a device in mA"
+    RELATIVE_POSITION = 0x0E
+    "1 float - When sent sets the relative position of actuator. The actuator will move from its current position the amount specified in the data."
+    INDEXED_POSITION = 0x0D
+    "1 float - On first receiving indexed position an offset is created between the indexed position demand received and the current position. New indexed positions packets then move the actuators relative to the initial indexed position. "
+    REQUEST = 0x60
+    "bytes - Request a packet ID. On receiving the command, the device will send the packet corresponding to the packet IDs in the data field."
+    SERIAL_NUMBER = 0x61
+    "1 float - The unique serial number of the device"
+    MODEL_NUMBER = 0x62
+    "1 float - The model number of the device"
+    TEMPERATURE = 0x66
+    "1 float - The internal temperature in Celsius"
+    SOFTWARE_VERSION = 0x6C
+    "3 bytes - The software version on the device"
+    KM_END_POS = 0xA1
+    "6 floats - Request the current end effector position. (X, Y, Z, Y, P, R) in mm and radians. Only for kinematic enabled arms."
+    KM_END_VEL = 0xA2
+    "6 floats - Demand the end effector velocity (XYZ, RZ, RY, RX) in mm/s and rads/s. Only for kinematic enabled arm. Rotation commands (RZ, RY, RX) is only available for 7 function arms."
+    KM_END_VEL_LOCAL = 0xCB
+    "6 floats - Demand the end effector velocity relative to the end effector. (XYZ, RZ, RY, RX) in mm/s and rads/s. Only fora kinematic enabled arm. Rotation commands (RZ, RY, RX) is only available for 7 function arms."
+    KM_BOX_OBSTACLE_02 = 0xA5
+    "6 floats - (X1, Y1, Z1, X2, Y2, Z2) mm. Box obstacle defined by 2 opposite corners of a rectangular prism. "
+    KM_BOX_OBSTACLE_03 = 0xA6
+    KM_BOX_OBSTACLE_04 = 0xA7
+    KM_BOX_OBSTACLE_05 = 0xA8
+    KM_CYLINDER_OBSTACLE_02 = 0xAB
+    "7 floats - (X1, Y1, Z1, X2, Y2, Z2, R) mm. Cylinder obstacle defined by 2 opposite centers of a cylinder. R defining the radius of the cylinder"
+    KM_CYLINDER_OBSTACLE_03 = 0xAC
+    KM_CYLINDER_OBSTACLE_04 = 0xAD
+    KM_CYLINDER_OBSTACLE_05 = 0xAE
+
+    VOLTAGE = 0x90
+    "1 float - The supply voltage in Volts"
+    SAVE = 0x50
+    "1 byte - Send this to save user configurable settings on a device"
+    HEARTBEAT_FREQUENCY = 0x92
+    "1 byte - set the frequency of a packet to be sent from a device."
+    HEARTBEAT_SET = 0x91
+    "10 bytes - Specify the Packet IDs to be sent via heartbeat."
+    POSITION_LIMITS = 0x10
+    "2 floats - Maximum and Minimum positions of the device"
+    VELOCITY_LIMITS = 0x11
+    "2 floats - Maximum and Minimum velocities of the device"
+    CURRENT_LIMITS = 0x12
+    "2 floats - Maximum and Minimum currents of the device"
+
+    ATI_FT_READING = 0xD8
+    "6 floats - Read force in N and Torque in Nm from the Force torque sensor. (FX, FY, FZ, TX, TY, TZ). Send this packet to the FT Sensor to Tare it"
+    BOOTLOADER = 0xFF
+
+    VOLTAGE_THRESHOLD_PARAMETERS = 0x99
+    "4 floats - Parameters to define the voltage threshold parameters. Enabled (0 or 1), V_Min (V), V_Max (V), time (seconds)."
+
+
+
