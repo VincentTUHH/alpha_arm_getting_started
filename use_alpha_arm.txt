@@ -1,0 +1,3 @@
+1. Schritt: Git-Repository erstellen
+2. Schritt: Mit VSCode verknüpfen
+3. Schritt: Änderungen committen und pushen
