@@ -1,5 +1,5 @@
-ReachRobotics provides basic comminication script in python to comunicate and control the Alpha5 Arm.
-!They only work, when no other script, like a ros node, is running and accesses the USB port (see ### serial port number ###)
+ReachRobotics provides basic communication script in python to comunicate and control the Alpha5 Arm.
+!They only work, when no other script, like a ros node, is running that also accesses the USB port (see ### serial port number ###)
 
 ### Use cases ####
 - drive joints to desired states
